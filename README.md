@@ -143,3 +143,18 @@ For the short-read mapping and variant calling pipeline. These tools are assumed
 	This script will output the entire result in `copynum_dip.txt`, and prints potential Robertsonian translocation carriers information.
 	It is currently relying on the DJ count, defined as less than 8.5 copies. Copy numbers are estimated in diploid (e.g. 10 acrocentric haplotypes in total for 5 acrocentric chromosomal arms).
 
+### Inputs
+* BAM file aligned to any reference.
+* The table of array, sample and the location of Bam file. 
+
+### Outputs
+* Estimated coverage files:`${region}.coverage_results.bed`:
+    * `$region` can be:
+      * background
+      * DJ
+      * PHR_forCov
+      * PHR_keep
+      * rDNA
+      * 5S
+      * rDNA_18S
+* VCF files generated with DeepVariant.	
