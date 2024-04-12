@@ -7,23 +7,32 @@ module load samtools
 
 # ARGUMENTS
 origianl_bam=$1
-outFastqName=$2
+sampleName=$2
+cpu=$SLURM_CPUS_PER_TASK
+tmp=/lscratch/${SLURM_JOB_ID}
 
+outFastqdir=fastq
+
+# Make output dir
+mkdir -p $outFastqdir
+
+# fastq_map.fofn
+echo -e "${outFastqdir}/${sampleName}_1.fq.gz\t${outFastqdir}/${sampleName}_2.fq.gz" > fastq_map.fofn
+
+set -x
 # sort by read name 
-samtools sort -@ $SLURM_CPUS_PER_TASK -n -o ${outFastqName}_nameSort.bam ${origianl_bam}
+samtools sort -@ $cpu -n -o $tmp/${sampleName}_nameSort.bam ${origianl_bam}
 
-if [ ! -f fastq/bam2fastq.done ]; then
+if [ ! -f bam2fastq.done ]; then
 # bam to fastq
-samtools fastq -@ $SLURM_CPUS_PER_TASK ${outFastqName}_nameSort.bam \
-                      -1 ${outFastqName}_1.fq \
-                      -2 ${outFastqName}_2.fq && rm ${outFastqName}_nameSort.bam
-bgzip -f ${outFastqName}_1.fq 
-bgzip -f ${outFastqName}_2.fq
+    samtools fastq -@ $cpu $tmp/${sampleName}_nameSort.bam \
+        -1 $tmp/${sampleName}_1.fq \
+        -2 $tmp/${sampleName}_2.fq && rm $tmp/${sampleName}_nameSort.bam
 
-if [ -f ${outFastqName}_1.fq.gz ] && [ -f ${outFastqName}_2.fq.gz ];then
-	touch fastq/bam2fastq.done
+    pigz -c $tmp/${sampleName}_1.fq > ${outFastqdir}/${sampleName}_1.fq.gz
+    pigz -c $tmp/${sampleName}_2.fq > ${outFastqdir}/${sampleName}_2.fq.gz
 fi
-
-fi
-
-echo -e "${outFastqName}_1.fq.gz\t${outFastqName}_2.fq.gz" > fastq_map
+rm $tmp/${sampleName}_[12].fq
+touch bam2fastq.done
+set +x
+cd ../

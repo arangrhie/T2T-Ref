@@ -16,7 +16,7 @@ out=$wd/$sample
 
 
 mkdir -p $wd/logs
-PIPELINE=/data/Phillippy2/projects/rpc/99.codes
+PIPELINE=$tools/T2T-Ref
 
 if [ ! -f $wd/bwa.done ]; then
   cpus=24
@@ -33,11 +33,4 @@ if [ ! -f $wd/bwa.done ]; then
   echo "\
   sbatch -J $name --mem=$mem --partition=$partition --cpus-per-task=$cpus -D $path $extra --time=$walltime --error=$log --output=$log $script $args"
   sbatch -J $name --mem=$mem --partition=$partition --cpus-per-task=$cpus -D $path $extra --time=$walltime --error=$log --output=$log $script $args | awk '{print $NF}' > $wd/bwa.jid
-fi
-
-# Calculate Coverage
-if [ ! -f $wd/depthCal.done ]; then
-	cmd="sh ~/code/_submit_norm.sh 50 50g ${sample}_cov ${PIPELINE}/calDepth/cal_cov.sh $sample --dependency=afterok:`cat $wd/bwa.jid`"
-	echo $cmd
-	eval $cmd
 fi

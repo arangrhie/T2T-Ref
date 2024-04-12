@@ -8,11 +8,11 @@ filterOpt_step2=$4 # OPT
 
 echo -e "sampleInfo : $sampleInfo"
 echo -e "outPrefix : $outPrefix"
-echo -e :filterOpt_step1 : $filterOpt_step1"
-echo -e :filterOpt_step2 : $filterOpt_step2"
+echo -e ":filterOpt_step1 : $filterOpt_step1"
+echo -e ":filterOpt_step2 : $filterOpt_step2"
 
 # Files
-PIPELINE="/data/Phillippy2/projects/rpc/99.codes"
+PIPELINE=$tools/T2T-Ref
 ANNOVARDIR=""
 
 

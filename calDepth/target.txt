@@ -1,0 +1,8 @@
+background	chm13.v2.autosome.wo_acro.bed
+rDNA	rDNA_keep.bed
+DJ	DJ_on_chr13.bed
+PHR_keep	PHR_keep.bed
+PHR_forCov	PHR_keep_for_cov.bed
+5S	keep_5S.bed
+GCmatch	matched_windows_subset.sort.bed
+rDNA_18S	rDNA.18S.bed

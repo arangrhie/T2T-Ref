@@ -1,27 +1,28 @@
 #!/bin/bash
+# this is deepvariant_step1.sh
 
-set -e
-set -o pipefail
-
-module load deepvariant/1.5.0 || exit 1
+module load deepvariant/1.6.0 || exit 1
 module load parallel
 
-wd=$1
+
+set -x 
+
+wd=$(realpath $1)
 SAMPLE=$2
 
 echo $wd
 
-[[ -d /lscratch/${SLURM_JOB_ID} ]] && cd /lscratch/${SLURM_JOB_ID}
+[[ -d /lscratch/${SLURM_JOB_ID} ]] && cd /lscratch/${SLURM_JOB_ID} || exit 1
+
+echo $PWD
 
 REF=`cat ${wd}/REF`
 BAM=`cat ${wd}/BAM`
 MODE=`cat ${wd}/MODE`
 OUT=dv_$MODE/examples # written in /lscratch by default
-N_SHARD=`cat ${wd}/N_SHARD`
+N_SHARDS=`cat ${wd}/N_SHARD`
 
-echo $REF $BAM $MODE $OUT $N_SHARD
-
-mkdir -p $OUT logs
+mkdir -p $OUT logs $wd/logs-parallel-$SLURM_JOB_ID
 
 extra_args=""
 
@@ -39,28 +40,19 @@ else
 fi
 
 echo "make_examples with parallel in $MODE mode"
-echo "
-make_examples \\
-  --mode calling   \\
-  --ref "${REF}"   \\
-  --reads "${BAM}" \\
-  --sample_name "$SAMPLE" \\ 
-  --examples $OUT/tfrecord@${N_SHARD}.gz $extra_args \\
-  --task {}
-"
 
-seq 0 $((N_SHARD-1)) \
-  | parallel -j ${SLURM_CPUS_PER_TASK} --eta --halt 2 \
-  --joblog "logs/log" --res "logs" \
-  make_examples    \
-    --mode calling \
-    --ref "${REF}" \
-    --reads "${BAM}" \
-    --sample_name "${SAMPLE}" \
-    --examples $OUT/tfrecord@${N_SHARD}.gz $extra_args \
-    --task {} \
-    || exit 1
+seq 0 $((N_SHARDS-1)) \
+    | parallel -P ${N_SHARDS} --halt 2 \
+        --joblog "$wd/logs-parallel-$SLURM_JOB_ID/log" --res "$wd/logs-parallel-$SLURM_JOB_ID" \
+      make_examples --mode calling \
+        --ref "${REF}" \
+        --reads "${BAM}" \
+        --examples $OUT/examples.tfrecord@${N_SHARDS}.gz \
+        --channels insert_size \
+        --task {} \
+|| exit 1 && touch $wd/deepvariant.step1.done &&
 
-mkdir -p $wd/dv_$MODE
-cp -r $OUT $wd/dv_$MODE
-cp -r logs/* $wd/logs
+
+mkdir -p $wd/dv_$MODE &&
+cp -r $OUT $wd/dv_$MODE && 
+rm -rf "$wd/logs-parallel-$SLURM_JOB_ID"
