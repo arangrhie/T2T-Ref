@@ -4,7 +4,7 @@
 outPrefix=$1
 
 thread=10
-annovarDB='/data/kimj75/00.Files/references/chm13v2/annovar/filterDB/'
+annovarDB=$tools/T2T-Ref/annovar/db
 build='hs1'
 
 # MODULE 
