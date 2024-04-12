@@ -72,3 +72,16 @@ Used for coverage estimates:
 chr13   11644595        12301366        chr13_PHR_arm1
 chr13   12440010        12819139        chr13_PHR_arm2
 ```
+
+### Chromosome 1 5S rDNA Masking
+Chromosome 1 contains a highly similar 5S rDNA repeat array, made up of head-to-tail repeats of the ~2.2kb 5S rDNA unit on the (-) strand, which contains the 5S gene that is translated to rRNA and forms part of the final ribosome. We extracted a single unit of this array using a self-mummer plot of chromosome 1, then aligned it back to chromosome 1 to define the array boundaries. We masked the entire array, aside from the first repeat unit, left to be the representative copy.
+
+Masked 5S array:
+```
+chr1    227743723       228022744       chr1_5S_array
+```
+
+Kept:
+```
+chr1    228022744       228024984       chr1_first_5S_unit
+```
