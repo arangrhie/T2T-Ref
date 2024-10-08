@@ -29,7 +29,21 @@ echo "Set ref as : $ref"
 
 bam=$sample.dedup.bam
 
-echo "# Submit DeepVariant only when step1 is done with no step2"
-if [ -f deepvariant.step1.done ] && [ ! -f deepvariant.step2.done ] ; then
-	sh $PIPELINE/deepvariant/_submit_deepvariant.sh $ref $bam WGS $sample $PWD
+if [[ ! -s $bam ]]; then
+  echo "No $bam found. Exit."
+  exit -1
 fi
+
+# To use smaller N_SHARD
+if [[ -f N_SHARD ]]; then
+  echo "Removing prior N_SHARD"
+  rm N_SHARD
+fi
+
+# _submit_deepvariant.sh looks for deepvariant.step*.done
+sh $PIPELINE/deepvariant/_submit_deepvariant.sh $ref $bam WGS $sample
+
+# echo "# Submit DeepVariant only when step1 is done with no step2"
+# if [ -f deepvariant.step1.done ] && [ ! -f deepvariant.step2.done ] ; then
+#	  sh $PIPELINE/deepvariant/_submit_deepvariant.sh $ref $bam WGS $sample $PWD
+# fi
