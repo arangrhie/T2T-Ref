@@ -2,37 +2,53 @@
 set -e
 set -o pipefail
 
-module load bedtools
 module load samtools
 
 # ARGUMENTS
-origianl_bam=$1
-sampleName=$2
+inBam=$1
+name=$2
 cpu=$SLURM_CPUS_PER_TASK
+outDir=fastq
+
+if [[ "$#" -lt 2 ]]; then
+  echo "Usage: bam2fastq.sh in.bam out_name"
+  echo "  in.bam    input bam file"
+  echo "  out_name  output prefix"
+  exit -1
+fi
+
+if [[ -z $SLURM_JOB_ID ]]; then
+  echo "Assign lscratch"
+  exit -1
+fi
 tmp=/lscratch/${SLURM_JOB_ID}
 
-outFastqdir=fastq
 
 # Make output dir
-mkdir -p $outFastqdir
+mkdir -p $outDir
 
 # fastq_map.fofn
-echo -e "${outFastqdir}/${sampleName}_1.fq.gz\t${outFastqdir}/${sampleName}_2.fq.gz" > fastq_map.fofn
+echo -e "`pwd`${outDir}/${name}_1.fq.gz\t`pwd`${outDir}/${name}_2.fq.gz" > fastq_map.fofn
 
-set -x
-# sort by read name 
-samtools sort -@ $cpu -n -o $tmp/${sampleName}_nameSort.bam ${origianl_bam}
+if [ ! -f bam2fastq.$name.done ]; then
+  set -x
+  # sort by read name
+  samtools sort -@ $cpu -n -o $tmp/${name}_nameSort.bam ${inBam}
 
-if [ ! -f bam2fastq.done ]; then
-# bam to fastq
-    samtools fastq -@ $cpu $tmp/${sampleName}_nameSort.bam \
-        -1 $tmp/${sampleName}_1.fq \
-        -2 $tmp/${sampleName}_2.fq && rm $tmp/${sampleName}_nameSort.bam
+  # bam to fastq
+  samtools fastq -@ $cpu $tmp/${name}_nameSort.bam \
+      -1 $tmp/${name}_1.fq \
+      -2 $tmp/${name}_2.fq && rm $tmp/${name}_nameSort.bam || exit -1
 
-    pigz -c $tmp/${sampleName}_1.fq > ${outFastqdir}/${sampleName}_1.fq.gz
-    pigz -c $tmp/${sampleName}_2.fq > ${outFastqdir}/${sampleName}_2.fq.gz
+  pigz $tmp/${name}_1.fq 
+  mv $tmp/${name}_1.fq.gz ${outDir}/${name}_1.fq.gz
+
+  pigz $tmp/${name}_2.fq
+  mv $tmp/${name}_2.fq.gz ${outDir}/${name}_2.fq.gz
+
+  touch bam2fastq.$name.done
+  set +x
+else
+  echo "Found bam2fastq.$name.done. Nothing to do."
 fi
-rm $tmp/${sampleName}_[12].fq
-touch bam2fastq.done
-set +x
 cd ../

@@ -35,10 +35,12 @@ samtools sort -@$cpu -O BAM -o $tmp/$out.bam -T $tmp/$out.tmp $tmp/$out.fix.bam 
 samtools index $tmp/$out.bam
 
 # samtools markdup <input.bam> <output.bam>
-samtools markdup -r -@$cpu $tmp/$out.bam $tmp/$out.dedup.bam && rm $tmp/$out.bam
-cp $tmp/$out.dedup.bam* ${wd}/
-samtools index $out.dedup.bam
+samtools markdup -r -@$cpu $tmp/$out.bam $tmp/$out.dedup.bam &&
+rm $tmp/$out.bam &&
 
+# Filter out secondary alignments
+samtools view -@$cpu -F0x100 -hb --write-index $tmp/$out.dedup.pri.bam $tmp/$out.dedup.bam &&
+mv $tmp/$out.dedup.pri.ba* ${wd}/ || echo "Failed..."
 rm -rf $tmp/*
 touch bwa.done
 
