@@ -1,7 +1,8 @@
 #!/bin/bash
 # this is deepvariant_step1.sh
 
-module load deepvariant/1.6.0 || exit 1
+# Update to DeepVariant v1.6.1 on Sep. 26 2024
+module load deepvariant/1.6.1 || exit 1
 module load parallel
 
 
@@ -41,18 +42,21 @@ fi
 
 echo "make_examples with parallel in $MODE mode"
 
+GVCF_TFRECORDS="${OUT}/examples.gvcf.tfrecord@${N_SHARDS}.gz"
+VCF_TFRECORDS="${OUT}/examples.tfrecord@${N_SHARDS}.gz"
+
 seq 0 $((N_SHARDS-1)) \
     | parallel -P ${N_SHARDS} --halt 2 \
         --joblog "$wd/logs-parallel-$SLURM_JOB_ID/log" --res "$wd/logs-parallel-$SLURM_JOB_ID" \
       make_examples --mode calling \
         --ref "${REF}" \
         --reads "${BAM}" \
-        --examples $OUT/examples.tfrecord@${N_SHARDS}.gz \
-        --channels insert_size \
-        --task {} \
-|| exit 1 && touch $wd/deepvariant.step1.done &&
-
-
+        --examples $VCF_TFRECORDS \
+        --gvcf $GVCF_TFRECORDS \
+        --sample_name $SAMPLE \
+        $extra_args \
+        --task {} &&
 mkdir -p $wd/dv_$MODE &&
-cp -r $OUT $wd/dv_$MODE && 
-rm -rf "$wd/logs-parallel-$SLURM_JOB_ID"
+cp -r $OUT $wd/dv_$MODE &&
+touch $wd/deepvariant.step1.done || exit 1
+#rm -rf "$wd/logs-parallel-$SLURM_JOB_ID"
