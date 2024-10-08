@@ -17,14 +17,14 @@ set -x
 
 # ARGUMENTS
 sampleInfo=$1
-refWiY=$2
-refWoY=$3
+refwiY=$2
+refwoY=$3
 idx=$SLURM_ARRAY_TASK_ID
 if [[ -z $idx ]]; then
   idx=$4
 fi
 
-PIPELINE=$tools/T2T-Ref
+PIPELINE='/data/Phillippy2/projects/rpc/99.codes_AR'
 
 sample=$(awk -v idx=$idx '$1==idx {print $2}' $sampleInfo)
 bam=$(awk -v idx=$idx '$1==idx {print $3}' $sampleInfo)
@@ -47,7 +47,7 @@ echo "== $idx $sample $sex =="
 echo
 
 echo "# bam 2 fastq - Output: fastq/${sample}_[12].fq.gz"
-if [[ ! -f bam2fastq.done ]] ; then
+if [[ -f bwa.done || ! -f bam2fastq.done ]] ; then
   echo "== extract reads and keep path in fastq_map.fofn =="
   sh $PIPELINE/preprocessing/bam2fastq.sh $bam $sample
   echo "bam2fastq done"
@@ -58,9 +58,9 @@ echo
 
 # set ref
 if [ "$sex" == "XX" ] ; then
-  ref=$refWoY
+  ref=$refwoY
 elif [ "$sex" == "XY" ] ; then
-  ref=$refWiY
+  ref=$refwiY	
 fi
 echo "Set ref as : $ref"
 
@@ -72,28 +72,3 @@ else
   echo "bwa was already done"
 fi
 echo
-
-# Double check the new bam file exists
-bam=$sample.dedup.bam
-if [[ ! -f $bam ]]; then
-  echo "No $bam found. Exit."
-  exit -1
-fi
-
-### BAM files are ready. Submit DepthCall and DeepVariant jobs
-### Note that logs will be present under $sample/logs/
-if [ ! -f cal.target.done ] ; then
-	echo "# Submit Calculate Coverage"
-	sh $PIPELINE/calDepth/_submit_cal_depth.sh $sample
-fi
-
-echo "# Submit DeepVariant"
-if [ ! -f deepvariant.step3.done ] ; then
-	sh $PIPELINE/deepvariant/_submit_deepvariant.sh $ref $bam WGS $sample $PWD
-fi
-
-# Disable until deepvariant devugging is done
-# echo "# Clean up bam"
-# sh $PIPELINE/variants_sr/_submit_cleanup.sh $sample
-# echo
-

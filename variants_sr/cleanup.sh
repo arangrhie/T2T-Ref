@@ -16,7 +16,7 @@ fi
 sample=$1
 
 echo "## Clean up bam and fastqs"
-if [[ -f deepvariant.step1.done
+if [[ -f deepvariant.step3.done
    && -f background.coverage_results.bed
    && -f cal.target.done ]]; then
   set -x

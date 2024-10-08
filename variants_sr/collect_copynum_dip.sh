@@ -1,6 +1,11 @@
 #!/bin/bash
 
-for sample in `ls -d 102-*/ | cut -d'/' -f 1`
+if ! [[ "$#" -eq 1 ]]; then
+  echo "Usage: collect_copynum_dip.sh sampleInfo.txt"
+  exit -1
+fi
+
+for sample in `cat $1 | awk '{print $2}'`
 do
 if [ -s $sample/background.coverage_results.bed ] && [ -f $sample/cal.target.done ] ; then
 	echo $sample
