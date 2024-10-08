@@ -14,11 +14,15 @@ module load mashmap
 asm_fa=$1
 asm=`echo $asm_fa | sed 's/\.gz$//g' | sed 's/\.fasta$//g' | sed 's/\.fa$//g'`
 cpu=$SLURM_CPUS_PER_TASK
+if [[ -z $cpu ]]; then
+  cpu=12
+fi
 
+set -x
 mashmap \
     -t $cpu \
     --noSplit \
-    -q $T2T_Ref/rDNA/human_45S.fa \
+    -q $tools/T2T-Ref/rDNA/human_45S.fa \
     -r $asm_fa \
     -s 13332 \
     --pi 85 \
@@ -27,6 +31,7 @@ mashmap \
 
 cat 45S_to_$asm.mashmap.out |\
   awk -v OFS='\t' '{print $6, $8, $9, $1, $(NF-1), $5}' |\
-  awk -F ":" '{print $1"\t"$3}' |\
+  awk -F ":" '{if ( NF > 3 ) print $1":"$(NF-2)"\t"$NF; else print $(NF-2)"\t"$NF}' |\
   awk -v OFS='\t' '{print $1, $2,$3, "45S", (100*$6), $7}' \
    > 45S_to_$asm.mashmap.bed
+set +x
