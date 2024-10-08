@@ -4,7 +4,7 @@ sample=$1
 extra=$2 # optional. e.g. "--dependency=afterok:[jid]"
 
 if [[ "$#" -lt 1 ]]; then
-  echo "Usage: ./_submit_cal_depth.sh sample extra"
+  echo "Usage: ./_submit_cal_depth.sh sample [extra]"
   exit -1
 fi
 

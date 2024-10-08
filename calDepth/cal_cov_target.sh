@@ -27,7 +27,7 @@ do
   # append path
   bed=$PIPELINE/ref/cal_bed/$bed
   
-  if [ ! -f $prefix.coverage_results.txt ]; then
+  if [ ! -f $prefix.coverage_results.bed ]; then
     sh $PIPELINE/calDepth/cal_cov.sh $sample $bed $prefix
   fi
 done
