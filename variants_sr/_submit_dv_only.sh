@@ -7,8 +7,8 @@ if [[ "$#" -lt 1 ]]; then
 fi
 
 PIPELINE=$tools/T2T-Ref
-refWiY=$PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_hardMaskY.fa
-refWoY=$PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_noY.fa
+refWiY=$PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_PAR_wi_rCRS.fa
+refWoY=$PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_noY_wi_rCRS.fa
 
 sample=$1
 cd $sample
@@ -27,23 +27,12 @@ elif [ "$sex" == "XY" ] ; then
 fi
 echo "Set ref as : $ref"
 
-bam=$sample.dedup.bam
+bam=$sample.dedup.pri.bam
 
-if [[ ! -s $bam ]]; then
-  echo "No $bam found. Exit."
-  exit -1
-fi
-
-# To use smaller N_SHARD
-if [[ -f N_SHARD ]]; then
-  echo "Removing prior N_SHARD"
-  rm N_SHARD
-fi
+# if [[ ! -s $bam ]]; then
+#   echo "No $bam found. Exit."
+#   exit -1
+# fi
 
 # _submit_deepvariant.sh looks for deepvariant.step*.done
-sh $PIPELINE/deepvariant/_submit_deepvariant.sh $ref $bam WGS $sample
-
-# echo "# Submit DeepVariant only when step1 is done with no step2"
-# if [ -f deepvariant.step1.done ] && [ ! -f deepvariant.step2.done ] ; then
-#	  sh $PIPELINE/deepvariant/_submit_deepvariant.sh $ref $bam WGS $sample $PWD
-# fi
+sh $PIPELINE/deepvariant/_submit_deepvariant.sh $ref $bam WGS $sample $sex

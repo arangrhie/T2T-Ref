@@ -6,7 +6,7 @@ sample=$1
 bed=$2
 prefix=$3
 
-bam=$sample.dedup.bam
+bam=$sample.dedup.pri.bam
 cpu=$SLURM_CPUS_PER_TASK
 
 module load samtools
