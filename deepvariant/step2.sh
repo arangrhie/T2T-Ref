@@ -24,7 +24,7 @@ CALL_VARIANTS_OUTPUT="dv_$MODE/call_variants_output.tfrecord.gz"
 set -x
 call_variants \
   --outfile "${CALL_VARIANTS_OUTPUT}" \
-  --writer_threads=8 \
+  --writer_threads=4 \
   --examples $OUT/examples.tfrecord@${N_SHARD}.gz \
   --checkpoint "${MODEL}"
 set +x
@@ -52,7 +52,7 @@ else
   set -x
   call_variants \
   --outfile "${CALL_VARIANTS_OUTPUT}" \
-  --writer_threads=8 \
+  --writer_threads=4 \
   --examples $OUT/examples.tfrecord@${N_SHARD}.gz \
   --checkpoint "${MODEL}"
   set +x
