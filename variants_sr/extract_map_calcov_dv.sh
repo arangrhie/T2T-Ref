@@ -13,7 +13,6 @@ fi
 
 set -e
 set -o pipefail
-set -x
 
 # ARGUMENTS
 sampleInfo=$1
@@ -36,7 +35,9 @@ mkdir -p logs
 # Sex check
 echo "# Determine XY - Output: sex.determine.txt"
 if [ ! -f sexCheck.done ]; then
+  set -x
   sh $PIPELINE/preprocessing/determine_xy.sh $bam $sample
+  set +x
 else
   echo -e "=> Sex check was already done"
 fi
@@ -47,9 +48,11 @@ echo "== $idx $sample $sex =="
 echo
 
 echo "# bam 2 fastq - Output: fastq/${sample}_[12].fq.gz"
-if [[ ! -f bam2fastq.done ]] ; then
+if [[ ! -f bam2fastq.$sample.done ]] ; then
   echo "== extract reads and keep path in fastq_map.fofn =="
+  set -x
   sh $PIPELINE/preprocessing/bam2fastq.sh $bam $sample
+  set +x
   echo "bam2fastq done"
 else 
   echo "bam2fastq was already done"
@@ -64,9 +67,11 @@ elif [ "$sex" == "XY" ] ; then
 fi
 echo "Set ref as : $ref"
 
-echo "# BWA - Output: $sample.dedup.cram"
+echo "# BWA - Output: $sample.dedup.pri.bam"
 if [ ! -f bwa.done ]; then
+  set -x
   sh $PIPELINE/bwa/bwa_single.sh $ref fastq_map.fofn $sample
+  set +x
   echo "bwa done"
 else
   echo "bwa was already done"
@@ -74,7 +79,7 @@ fi
 echo
 
 # Double check the new bam file exists
-bam=$sample.dedup.bam
+bam=$sample.dedup.pri.bam
 if [[ ! -f $bam ]]; then
   echo "No $bam found. Exit."
   exit -1
@@ -84,16 +89,23 @@ fi
 ### Note that logs will be present under $sample/logs/
 if [ ! -f cal.target.done ] ; then
 	echo "# Submit Calculate Coverage"
+  set -x
 	sh $PIPELINE/calDepth/_submit_cal_depth.sh $sample
+  set +x
 fi
 
 echo "# Submit DeepVariant"
 if [ ! -f deepvariant.step3.done ] ; then
-	sh $PIPELINE/deepvariant/_submit_deepvariant.sh $ref $bam WGS $sample $PWD
+  set -x
+	sh $PIPELINE/deepvariant/_submit_deepvariant.sh $ref $bam WGS $sample $sex
+  set +x
 fi
 
-# Disable until deepvariant devugging is done
-# echo "# Clean up bam"
-# sh $PIPELINE/variants_sr/_submit_cleanup.sh $sample
-# echo
+if [[ -f bwa.done ]]; then
+  echo "# Clean up fastq"
+  #sh $PIPELINE/variants_sr/_submit_cleanup.sh $sample
+  rm -r fastq
+  rm bam2fastq.$sample.done
+fi
+echo
 
