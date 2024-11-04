@@ -9,23 +9,21 @@ if [ -z $ref ]; then
 fi
 
 module load bwa
-module load samtools
+module load samtools  # v1.21+
 module load bedtools
 
+cpu=$SLURM_CPUS_PER_TASK
+if [[ -z $cpu ]]; then
+  cpu=8
+fi
+
+set -x
 if [ ! -f $ref.bwt ]; then
-echo "
-bwa index $ref"
-bwa index $ref
+  bwa index $ref
 fi
 
 if [ ! -f $ref.fai ]; then
-echo "
-samtools faidx $ref"
-samtools faidx $ref
+  samtools faidx -@$cpu $ref
 fi 
 
-# make window for future calcation of depth
-if [ ! -f $ref.fai.win10k.bed ]; then
-echo "bedtools makewindows -g $ref.fa.fai -w 10000 > $ref.fai.win10k.bed"
-bedtools makewindows -g $ref.fai -w 10000 > $ref.fai.win10k.bed
-fi
+set +x
