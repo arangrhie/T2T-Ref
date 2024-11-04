@@ -27,9 +27,6 @@ tmp=/lscratch/${SLURM_JOB_ID}
 # Make output dir
 mkdir -p $outDir
 
-# fastq_map.fofn
-echo -e "`pwd`${outDir}/${name}_1.fq.gz\t`pwd`${outDir}/${name}_2.fq.gz" > fastq_map.fofn
-
 if [ ! -f bam2fastq.$name.done ]; then
   set -x
   # sort by read name
@@ -40,12 +37,15 @@ if [ ! -f bam2fastq.$name.done ]; then
       -1 $tmp/${name}_1.fq \
       -2 $tmp/${name}_2.fq && rm $tmp/${name}_nameSort.bam || exit -1
 
-  pigz $tmp/${name}_1.fq 
-  mv $tmp/${name}_1.fq.gz ${outDir}/${name}_1.fq.gz
+  pigz $tmp/${name}_1.fq
+  # mv $tmp/${name}_1.fq.gz ${outDir}/${name}_1.fq.gz
 
   pigz $tmp/${name}_2.fq
-  mv $tmp/${name}_2.fq.gz ${outDir}/${name}_2.fq.gz
+  # mv $tmp/${name}_2.fq.gz ${outDir}/${name}_2.fq.gz
 
+  # fastq_map.fofn
+  # echo -e "${PWD}/${outDir}/${name}_1.fq.gz\t${PWD}/${outDir}/${name}_2.fq.gz" > fastq_map.fofn
+  echo -e "$tmp/${name}_1.fq.gz\t$tmp/${name}_2.fq.gz" > fastq_map.fofn
   touch bam2fastq.$name.done
   set +x
 else
