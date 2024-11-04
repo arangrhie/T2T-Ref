@@ -1,8 +1,10 @@
 #! /bin/bash
 
-if [[ "$#" -lt 4 ]] ; then
-  echo "Usage: ./_submit_deepvariant.sh <ref.fa> <alignment.bam> <mode> <sample> [jid_to_wait]"
-  echo "  mode   WGS | PACBIO | ONT_R104 | HYBRID_PACBIO_ILLUMINA"
+if [[ "$#" -lt 5 ]] ; then
+  echo "Usage: ./_submit_deepvariant.sh <ref.fa> <alignment.bam> <mode> <sample> <sex> [jid_to_wait]"
+  echo "  mode    WGS | PACBIO | ONT_R104 | HYBRID_PACBIO_ILLUMINA"
+  echo "  sample  unique identifier for each sample"
+  echo "  sex     XX or XY. For XY individuals, X and Y will readjust genotypes for hets, except for the PAR"
   echo "  output file will be generated as dv_mode.vcf.gz and dv_mode.gvcf.gz"
   exit -1
 fi
@@ -10,8 +12,9 @@ fi
 REF=$(realpath $1)
 BAM=$(realpath $2)
 MODE=$3
-SAMPLE=$4 # name to be appeared in the output VCF SAMPLE field
-wait_for=$5 # optional
+SAMPLE=$4   # name to be appeared in the output VCF SAMPLE field
+SEX=$5      # XY? For step3
+wait_for=$6 # optional
 
 if [ -f  N_SHARD  ] ; then 
 	N_SHARD=$(cat N_SHARD)
@@ -82,7 +85,7 @@ if [ ! -f deepvariant.step2.done ]; then
   name=dv_step2
   log=logs/$name.%A.log
   script=$PIPELINE/deepvariant/step2.sh
-  walltime=6:00:00 # for k80; took ~5 hrs
+  walltime=8:00:00 # for k80; took ~5 hrs
   args=""
   partition=gpu
 
@@ -98,13 +101,13 @@ fi
 if [ ! -f deepvariant.step3.done ]; then
   echo "Step 3. postprocess_variants"
   cpus=12
-  mem=80g
+  mem=72g # 1 sample got killed at 60 G
   name=dv_step3
   log=logs/$name.%A.log
   script=$PIPELINE/deepvariant/step3.sh
-  args="$SAMPLE"
+  args="$SAMPLE $SEX"
   partition=quick
-  walltime=1:00:00
+  walltime=1:20:00 # 1 sample timed out with 50 min
   
   set -x
   sbatch -J ${SAMPLE}_$name --cpus-per-task=$cpus --mem=$mem \
