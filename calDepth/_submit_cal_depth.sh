@@ -26,7 +26,7 @@ target=$PIPELINE/calDepth/target.txt
 bed_prefix=`head -n1 $target`
 prefix=`echo $bed_prefix | awk '{print $1}'`
 bed=`echo $bed_prefix | awk '{print $2}'`
-bed="$PIPELINE/ref/cal_bed/$bed"
+bed="$PIPELINE/cal_bed/$bed"
 
 echo "## Submit Background Coverage Calculation"
 

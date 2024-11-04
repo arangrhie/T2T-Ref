@@ -25,7 +25,7 @@ do
   bed=`sed -n ${i}p $target | awk '{print $2}'`
   echo $prefix $bed
   # append path
-  bed=$PIPELINE/ref/cal_bed/$bed
+  bed=$PIPELINE/cal_bed/$bed
   
   if [ ! -f $prefix.coverage_results.bed ]; then
     sh $PIPELINE/calDepth/cal_cov.sh $sample $bed $prefix
