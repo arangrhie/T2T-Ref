@@ -11,9 +11,7 @@ set -e
 set -o pipefail
 PIPELINE=$tools/T2T-Ref
 
-dv_step1_jid=`cat step1.jid`
-bg_cal_jid=`cat cal.background.jid`
-tg_cal_jid=`cat cal.target.jid`
+dv_step3_jid=`cat step3.jid`
 
 mkdir -p logs
 
@@ -26,7 +24,7 @@ name=$sample.cleanup
 log=logs/${name}.%A.log
 script=$PIPELINE/variants_sr/cleanup.sh
 args="$sample"
-extra="--dependency=afterok:${dv_step1_jid},${bg_cal_jid},${tg_cal_jid}"
+extra="--dependency=afterok:${dv_step3_jid}"
 
 set -x
 sbatch -J $name --cpus-per-task=$cpus --mem=$mem \
