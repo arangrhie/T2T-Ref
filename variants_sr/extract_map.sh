@@ -24,7 +24,7 @@ if [[ -z $idx ]]; then
   idx=$4
 fi
 
-PIPELINE='/data/Phillippy2/projects/rpc/99.codes_AR'
+PIPELINE='$tools/T2T-Ref'
 
 sample=$(awk -v idx=$idx '$1==idx {print $2}' $sampleInfo)
 bam=$(awk -v idx=$idx '$1==idx {print $3}' $sampleInfo)
@@ -64,7 +64,7 @@ elif [ "$sex" == "XY" ] ; then
 fi
 echo "Set ref as : $ref"
 
-echo "# BWA - Output: $sample.dedup.cram"
+echo "# BWA - Output: $sample.dedup.pri.bam"
 if [ ! -f bwa.done ]; then
   sh $PIPELINE/bwa/bwa_single.sh $ref fastq_map.fofn $sample
   echo "bwa done"
