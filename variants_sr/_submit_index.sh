@@ -9,8 +9,8 @@ set -e
 set -o pipefail
 
 PIPELINE=$tools/T2T-Ref
-refWiY=$1 # $PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_hardMaskY.fa
-refWoY=$2 # $PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_noY.fa
+refWiY=$1 # $PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_PAR_wi_rCRS.fa
+refWoY=$2 # $PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_noY_wi_rCRS.fa
 
 ## Submission env variables
 mkdir -p logs

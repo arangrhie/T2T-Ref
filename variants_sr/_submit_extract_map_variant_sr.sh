@@ -15,8 +15,8 @@ set -o pipefail
 
 # Adjust to match local path
 PIPELINE=$tools/T2T-Ref
-refWiY=$PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_hardMaskY.fa
-refWoY=$PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_noY.fa
+refWiY=$PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_PAR_wi_rCRS.fa
+refWoY=$PIPELINE/ref/chm13v2.0_masked_DJ_5S_rDNA_PHR_noY_wi_rCRS.fa
 
 maponly="N"
 if [ "x$1" = "x-maponly" ]; then
