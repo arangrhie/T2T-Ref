@@ -9,12 +9,18 @@ inputBam=$1
 sampleName=$2
 
 cpu=$SLURM_CPUS_PER_TASK
+if [[ -z $cpu ]]; then
+  cpu=8
+fi
+
 tmp=/lscratch/${SLURM_JOB_ID}
 
 module load samtools
 
+set -x
+
 # check sorted by coordinate
-if [ -f $inputBam.bai ]; then
+if [[ -f $inputBam.bai || -f ${inputBam/.bam/.bai} || -f $inputBam.csi ]]; then
     echo "The BAM file is sorted..."
     ln -s $inputBam $sampleName.sorted.bam
     ln -s $inputBam.bai $sampleName.sorted.bam.bai
@@ -26,15 +32,17 @@ else
     samtools index $sampleName.sorted.bam
 fi
 
+set -e
+
 # Check sex
 samtools idxstats -@$cpu $sampleName.sorted.bam > original.bam.idxstats
 
-x_map=$(grep "chrX" original.bam.idxstats | cut -f 3)
-x_len=$(grep "chrX" original.bam.idxstats | cut -f 2)
+x_map=$(grep -E "^chrX|^X" original.bam.idxstats | cut -f 3)
+x_len=$(grep -E "^chrX|^X" original.bam.idxstats | cut -f 2)
 x_cov=$(echo "scale=10; ${x_map}/${x_len}" | bc)
 
-y_map=$(grep "chrY" original.bam.idxstats | cut -f 3)
-y_len=$(grep "chrY" original.bam.idxstats | cut -f 2)
+y_map=$(grep -E "^chrY|^Y" original.bam.idxstats | cut -f 3)
+y_len=$(grep -E "^chrY|^Y" original.bam.idxstats | cut -f 2)
 y_cov=$(echo "scale=10; ${y_map}/${y_len}" | bc)
 
 ratio=$(echo "scale=10; ${x_cov}/${y_cov}" | bc)
