@@ -4,10 +4,10 @@ Pipeline for using T2T-CHM13v2.0 as a reference
 ## Mapping and variant calling for short-reads
 This is an experimental pipeline for testing short-read based analysis variant calling methods using T2T-CHM13v2 as the reference. Acknowledging the limitations of difficult-to-map regions with short-reads, we developed a pipeline utilizing a masked reference. Masking has been designed to 1) complement sex-chromosome differences between XX and XY individuals and 2) detect robertsonian translocations, often resulting in copy loss in the acrocentric p-arms. The mitochondrial sequence has been replaced with the Cambridge Reference Sequence (rCRS, [NC_012920](https://www.ncbi.nlm.nih.gov/nuccore/251831106)) to abide with the rich annotation and resources.
 
-The masked references described below is available to download [here](https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=T2T/CHM13/assemblies/analysis_set/masked_DJ_rDNA_PHR_5S/).
+The masked references described below is available to download [here](https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=T2T/CHM13/assemblies/analysis_set/masked_DJ_rDNA_PHR_5S_wi_rCRS/).
 
 ### Sex chromosome complement masking
-The pipeline takes a mapped bam file on hg19, and determins the presence of Y chromosome. For XX samples, the Y chromosome has been entirely hard-masked in the reference. For XY samples, pseudo-autosomal region (PAR) on the Y has been hard-masked to call variants in diploid mode on the PAR region. This approach has been tested to reduce false positives and recover more variants in the PAR. More details are described in the [T2T-HG002Y paper](https://doi.org/10.1038/s41586-023-06457-y).
+The pipeline takes a mapped bam file on hg19 (or hg38), and determins the presence of Y chromosome. For XX samples, the Y chromosome has been entirely hard-masked in the reference. For XY samples, pseudo-autosomal region (PAR) on the Y has been hard-masked to call variants in diploid mode on the PAR region. This approach has been tested to reduce false positives and recover more variants in the PAR. More details are described in the [T2T-HG002Y paper](https://doi.org/10.1038/s41586-023-06457-y).
 
 Masked PAR regions on the Y (includes telomere):
 ```
@@ -15,7 +15,7 @@ chrY    0       2458320       PAR1
 chrY    62122809        62460029       PAR2
 ```
 
-Masked Y for XX individuals (entire Y chromosome has been masked):
+Masked Y for XX individuals (entire Y chromosome has been hard-masked):
 ```
 chrY	0	62460029
 ```
@@ -106,16 +106,16 @@ For the short-read mapping and variant calling pipeline. These tools are assumed
 2. Download the reference files and ANNOVAR dbs from aws (assuming aws cli is available):
 	```
 	cd $tools/T2T-Ref/ref/
-	aws s3 cp --recursive s3://human-pangenomics/T2T/CHM13/assemblies/analysis_set/masked_DJ_rDNA_PHR_5S/ .
+	aws s3 cp --no-sign-request --recursive s3://human-pangenomics/T2T/CHM13/assemblies/analysis_set/masked_DJ_rDNA_PHR_5S_wi_rCRS/ .
 	cd $tools/T2T-Ref/annovar/db/
-	aws s3 cp --recursive s3://human-pangenomics/T2T/CHM13/assemblies/annotation/annovar/ .
+	aws s3 cp --no-sign-request --recursive s3://human-pangenomics/T2T/CHM13/assemblies/annotation/annovar/ .
 	```
-	Otherwise, download the [reference files](https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=T2T/CHM13/assemblies/analysis_set/masked_DJ_rDNA_PHR_5S/) and [ANNOVAR dbs](https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=T2T/CHM13/assemblies/annotation/annovar/), using https links.
+	Otherwise, download the [reference files](https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=T2T/CHM13/assemblies/analysis_set/masked_DJ_rDNA_PHR_5S_wi_rCRS/) and [ANNOVAR dbs](https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=T2T/CHM13/assemblies/annotation/annovar/), using https links.
 
 3. Submit the pipeline
 	Currently, the pipeline is built to work on Slurm environments, set up at hpc.nih.gov.
 
-	The pipeline assumes read mappings (bam) to older reference (e.g. hg19) exists, and uses it to determine the presence of Y.
+	The pipeline assumes read mappings (bam) to older reference (e.g. hg19) exists, and uses it to determine the presence of Y in each sample.
 
 	Prepare an input file containing `sampleIndex <tab> sampleName <tab> path/to/old.bam`.
 
@@ -130,7 +130,7 @@ For the short-read mapping and variant calling pipeline. These tools are assumed
 	```
 	cd /path/to/produce/output/
 	# Launch samples in lines 1-100 and 205
-	$tools/variants_sr/_submit_extract_map_variant_sr.sh sample_info.Inova.txt 1-100,205
+	$tools/T2T-Ref/variants_sr/_submit_extract_map_variant_sr.sh sample_info.Inova.txt 1-100,205
 	```
 	This will create a directory named after the `sampleName`, and place the output files there.
 
