@@ -47,7 +47,7 @@ sex=`cut -f 3 sex.determine.txt`
 echo "== $idx $sample $sex =="
 echo
 
-echo "# bam 2 fastq - Output: fastq/${sample}_[12].fq.gz"
+echo "# bam 2 fastq - Output: lscratch/.../${sample}_[12].fq.gz"
 if [[ ! -f bam2fastq.$sample.done ]] ; then
   echo "== extract reads and keep path in fastq_map.fofn =="
   set -x
@@ -104,7 +104,9 @@ fi
 if [[ -f bwa.done ]]; then
   echo "# Clean up fastq"
   #sh $PIPELINE/variants_sr/_submit_cleanup.sh $sample
-  rm -r fastq
+  if [[ -d fastq ]]; then
+    rm -r fastq
+  fi
   rm bam2fastq.$sample.done
 fi
 echo

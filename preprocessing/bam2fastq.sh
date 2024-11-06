@@ -23,10 +23,6 @@ if [[ -z $SLURM_JOB_ID ]]; then
 fi
 tmp=/lscratch/${SLURM_JOB_ID}
 
-
-# Make output dir
-mkdir -p $outDir
-
 if [ ! -f bam2fastq.$name.done ]; then
   set -x
   # sort by read name
@@ -51,4 +47,3 @@ if [ ! -f bam2fastq.$name.done ]; then
 else
   echo "Found bam2fastq.$name.done. Nothing to do."
 fi
-cd ../
