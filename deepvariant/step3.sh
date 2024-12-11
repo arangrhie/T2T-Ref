@@ -1,7 +1,7 @@
 #! /bin/bash
 
-if [[ "$#" -lt 2 ]]; then
-  echo "./step3.sh sample sex"
+if [[ "$#" -lt 3 ]]; then
+  echo "./step3.sh sample sex par"
   exit -1
 fi
 
@@ -22,12 +22,13 @@ N_SHARDS=`cat N_SHARD`
 
 SAMPLE=$1
 SEX=$2
+PAR=$3
+
 REF=`cat REF`
 MODE=`cat MODE`
 OUT=dv_$MODE
 CALL_VARIANTS_OUTPUT="dv_$MODE/call_variants_output.tfrecord.gz"
 GVCF_TFRECORDS="${OUT}/examples/examples.gvcf.tfrecord@${N_SHARDS}.gz"
-PAR="$tools/T2T-Ref/ref/chm13v2.0_PAR.bed"
 
 if [[ $SEX = "XY" ]]; then
   haploid="--haploid_contigs chrX,chrY --par_regions_bed ${PAR}"

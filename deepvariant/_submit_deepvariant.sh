@@ -1,10 +1,11 @@
 #! /bin/bash
 
 if [[ "$#" -lt 5 ]] ; then
-  echo "Usage: ./_submit_deepvariant.sh <ref.fa> <alignment.bam> <mode> <sample> <sex> [jid_to_wait]"
+  echo "Usage: ./_submit_deepvariant.sh <ref.fa> <alignment.bam> <mode> <sample> <sex> [par] [jid_to_wait]"
   echo "  mode    WGS | PACBIO | ONT_R104 | HYBRID_PACBIO_ILLUMINA"
   echo "  sample  unique identifier for each sample"
-  echo "  sex     XX or XY. For XY individuals, X and Y will readjust genotypes for hets, except for the PAR"
+  echo "  sex     XX or XY. For XY individuals, X and Y will re-adjust genotypes for hets, except for the PAR"
+  echo "  par     PAR bed file for XY individuals. DEFAULT=\$tools/T2T-Ref/ref/chm13v2.0_PAR.bed"
   echo "  output file will be generated as dv_mode.vcf.gz and dv_mode.gvcf.gz"
   exit -1
 fi
@@ -14,16 +15,22 @@ BAM=$(realpath $2)
 MODE=$3
 SAMPLE=$4   # name to be appeared in the output VCF SAMPLE field
 SEX=$5      # XY? For step3
-wait_for=$6 # optional
+PAR=$6      # PAR bed file
+wait_for=$7 # optional
 
 if [ -f  N_SHARD  ] ; then 
 	N_SHARD=$(cat N_SHARD)
 else
 	N_SHARD=12
 fi
-PIPELINE=$tools/T2T-Ref
 
-echo -e "$REF $BAM $MODE $SAMPLE $wait_for"
+PIPELINE=$tools/T2T-Ref
+if [[ -z $PAR ]]; then
+  PAR=$PIPELINE/ref/chm13v2.0_PAR.bed
+fi
+
+
+echo -e "$REF $BAM $MODE $SAMPLE $SEX $PAR $wait_for"
 
 # Check $MODE is valid
 if [[ $MODE == "WGS" || $MODE == "PACBIO" || $MODE == "ONT_R104" || $MODE == "HYBRID_PACBIO_ILLUMINA" ]]; then
@@ -105,7 +112,7 @@ if [ ! -f deepvariant.step3.done ]; then
   name=dv_step3
   log=logs/$name.%A.log
   script=$PIPELINE/deepvariant/step3.sh
-  args="$SAMPLE $SEX"
+  args="$SAMPLE $SEX $PAR"
   partition=quick
   walltime=1:20:00 # 1 sample timed out with 50 min
   
