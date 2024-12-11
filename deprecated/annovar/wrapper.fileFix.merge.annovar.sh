@@ -28,8 +28,8 @@ if [ ! -f merge.filter.done ]; then
 fi
 
 # 03 ANNOVAR
-if [ ! -f variant_annotation.done ]; then
+if [ ! -f annotate_variants.done ]; then
 	set -x
-	sh $PIPELINE/annovar/annotation.variants.hs1.sh $outPrefix
+	sh $PIPELINE/annovar/annotate_variants.sh $outPrefix.vcf $outPrefix
 	set +x
 fi
