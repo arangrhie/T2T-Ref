@@ -5,7 +5,7 @@ fastq_map=$2
 sample=$3
 
 if [[ -z $ref || -z $fastq_map || -z $sample ]]; then
-	echo "Usage: ./bwa.sh <ref.fasta> <fastq_map> <out>"
+	echo "Usage: ./bwa_single.sh <ref.fasta> <fastq_map> <out>"
 	echo "No <ref.fasta> found. Exit."
 	exit -1
 fi
